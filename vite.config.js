@@ -7,7 +7,7 @@ import { VitePWA } from 'vite-plugin-pwa'
 // https://<username>.github.io/rummy-pwa/ — change to '/' if using a
 // custom domain, or to '/<your-repo-name>/' if you name the repo differently.
 export default defineConfig({
-  base: '/rummy-pwa/',
+  base: '/rummy/',
   plugins: [
     react(),
     VitePWA({
