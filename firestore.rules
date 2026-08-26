@@ -1,0 +1,85 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAllowedEmail() {
+      return isSignedIn() &&
+        exists(/databases/$(database)/documents/allowlist/$(request.auth.token.email.lower()));
+    }
+
+    // One doc per allowed family email. Content doesn't matter, existence does.
+    // Only writable by you directly in the Firebase console, or via the
+    // syncAllowlist.js admin script - never from the app itself.
+    match /allowlist/{email} {
+      allow read: if false;   // clients never need to read this directly
+      allow write: if false;  // managed out-of-band (console / admin script)
+    }
+
+    match /rooms/{roomCode} {
+      allow read: if isAllowedEmail();
+      allow create: if isAllowedEmail() && request.resource.data.hostUid == request.auth.uid;
+      // Either the current host updates room state (normal play, heartbeats),
+      // OR any allow-listed room member reclaims a stale host slot — but a
+      // reclaim may ONLY touch hostUid + hostHeartbeatAt, and only once the
+      // heartbeat is more than 30s old, so it can't be used to hijack an
+      // active game.
+      allow update: if isAllowedEmail() && (
+        resource.data.hostUid == request.auth.uid ||
+        (
+          resource.data.status == 'inGame' &&
+          request.time.toMillis() - resource.data.hostHeartbeatAt.toMillis() > 30000 &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['hostUid', 'hostHeartbeatAt'])
+        )
+      );
+      allow delete: if false;
+
+      match /players/{uid} {
+        allow read: if isAllowedEmail();
+        // Players can only create/update their OWN player doc (joining, presence heartbeat).
+        allow create, update: if isAllowedEmail() && request.auth.uid == uid;
+        allow delete: if false;
+      }
+
+      match /games/{gameNumber} {
+        // Public per-game state (no hands here) - any room member can read.
+        // Only the host writes it (via the app's host-sync logic).
+        allow read: if isAllowedEmail();
+        allow write: if isAllowedEmail() && get(/databases/$(database)/documents/rooms/$(roomCode)).data.hostUid == request.auth.uid;
+
+        match /hands/{uid} {
+          // A hand is readable ONLY by its owner or the host (host needs it
+          // to run authoritative game logic, e.g. scoring at showdown).
+          allow read: if isAllowedEmail() &&
+            (request.auth.uid == uid ||
+             get(/databases/$(database)/documents/rooms/$(roomCode)).data.hostUid == request.auth.uid);
+          // Only the host's client ever writes hands (it deals and updates them).
+          allow write: if isAllowedEmail() &&
+            get(/databases/$(database)/documents/rooms/$(roomCode)).data.hostUid == request.auth.uid;
+        }
+
+        match /hostPrivate/{docId} {
+          // The closed draw pile's real contents. Host-only, both read and
+          // write — no other player's client should ever see this.
+          allow read, write: if isAllowedEmail() &&
+            get(/databases/$(database)/documents/rooms/$(roomCode)).data.hostUid == request.auth.uid;
+        }
+
+        match /intents/{intentId} {
+          // Any room member can submit their own intent...
+          allow create: if isAllowedEmail() && request.resource.data.uid == request.auth.uid;
+          // ...but only the host can mark it processed / attach an error.
+          allow update: if isAllowedEmail() &&
+            get(/databases/$(database)/documents/rooms/$(roomCode)).data.hostUid == request.auth.uid;
+          // Everyone can read intents (needed so a player can see their own
+          // intent get marked processed); this is fine, intents don't leak hands.
+          allow read: if isAllowedEmail();
+          allow delete: if false;
+        }
+      }
+    }
+  }
+}

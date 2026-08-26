@@ -1,0 +1,186 @@
+/* index.css — design tokens
+   Subject: a family card table, played on phones across distances.
+   Palette: deep felt green table, warm ivory cards, brass for wins/jokers,
+   brick red for danger/drop states. Signature element: a torn-ticket-stub
+   look for the room code and score reveal — a nod to game-night scorepads.
+*/
+
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Work+Sans:wght@400;500;600&family=JetBrains+Mono:wght@500;600&display=swap');
+
+:root {
+  --felt-900: #123328;
+  --felt-800: #1F4B3F;
+  --felt-700: #2A5F4F;
+  --ivory: #F7F3E8;
+  --ivory-dim: #E8E1CF;
+  --ink: #201C16;
+  --ink-soft: #4A443B;
+  --brass: #C9A227;
+  --brass-bright: #E4C24E;
+  --brick: #B5533C;
+  --brick-bright: #D06B4F;
+
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-body: 'Work Sans', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  --radius-card: 10px;
+  --radius-panel: 16px;
+  --shadow-card: 0 2px 6px rgba(0, 0, 0, 0.35);
+  --shadow-panel: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: radial-gradient(ellipse at top, var(--felt-700) 0%, var(--felt-900) 70%);
+  color: var(--ivory);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior: none;
+}
+
+h1, h2, h3 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  margin: 0 0 0.4em;
+  letter-spacing: -0.01em;
+}
+
+button {
+  font-family: var(--font-body);
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  border-radius: 999px;
+  padding: 0.75em 1.5em;
+  font-size: 1rem;
+  transition: transform 0.08s ease, filter 0.15s ease;
+}
+button:active {
+  transform: scale(0.97);
+}
+button:focus-visible {
+  outline: 3px solid var(--brass-bright);
+  outline-offset: 2px;
+}
+button.primary {
+  background: var(--brass);
+  color: var(--ink);
+}
+button.primary:hover {
+  filter: brightness(1.08);
+}
+button.secondary {
+  background: transparent;
+  color: var(--ivory);
+  border: 1.5px solid var(--ivory-dim);
+}
+button.danger {
+  background: var(--brick);
+  color: var(--ivory);
+}
+button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  filter: none;
+  transform: none;
+}
+
+input[type="text"], input[type="email"], input[type="number"] {
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  padding: 0.65em 0.9em;
+  border-radius: 8px;
+  border: 1.5px solid var(--felt-700);
+  background: var(--ivory);
+  color: var(--ink);
+  width: 100%;
+}
+input:focus-visible {
+  outline: 3px solid var(--brass-bright);
+  outline-offset: 1px;
+}
+
+.screen {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 16px calc(24px + env(safe-area-inset-bottom));
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.panel {
+  background: rgba(18, 51, 40, 0.55);
+  border: 1px solid rgba(247, 243, 232, 0.12);
+  border-radius: var(--radius-panel);
+  box-shadow: var(--shadow-panel);
+  padding: 20px;
+  width: 100%;
+}
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--brass-bright);
+  margin-bottom: 6px;
+}
+
+/* --- Signature element: torn-ticket stub, used for room code + score reveal --- */
+.ticket {
+  position: relative;
+  background: var(--ivory);
+  color: var(--ink);
+  border-radius: 4px;
+  padding: 22px 20px;
+  font-family: var(--font-mono);
+  box-shadow: var(--shadow-panel);
+}
+.ticket::before,
+.ticket::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--felt-900);
+  box-shadow: 0 0 0 3px rgba(0,0,0,0.15) inset;
+}
+.ticket::before { left: -9px; }
+.ticket::after { right: -9px; }
+.ticket-perforation {
+  border: none;
+  border-top: 2px dashed var(--felt-700);
+  margin: 14px 0;
+}
+.ticket-code {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 2.2rem;
+  letter-spacing: 0.18em;
+  text-align: center;
+  color: var(--felt-900);
+}
+
+.stack { display: flex; flex-direction: column; gap: 14px; width: 100%; }
+.row { display: flex; align-items: center; gap: 10px; }
+.row.between { justify-content: space-between; }
+.muted { color: var(--ivory-dim); font-size: 0.9rem; }
+.error-text { color: var(--brick-bright); font-size: 0.9rem; }
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}
