@@ -9,5 +9,8 @@
 export const ALLOWED_FAMILY_MEMBERS = [
   // { email: 'example@gmail.com', displayName: 'Example Name' },
   // Add one line per family member below:
-  {email: 'gvssmark@gmail.com', displayName: 'GVSS MARK'}
+  {email: 'gvssmark@gmail.com', displayName: 'GVSS MARK'},
+  {email: 'gbtsundary@gmail.com', displayName: 'Sundari'},
+  {email: 'hgoteti@gmail.com', displayName: 'Harini'}
+
 ];
